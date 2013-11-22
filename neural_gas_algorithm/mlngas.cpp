@@ -38,7 +38,7 @@
 //
 //M*/
 
-#include "precomp.hpp"
+#include "mlngas.hpp"
 
 using namespace cv;
 using namespace std;
@@ -80,7 +80,7 @@ bool NeuralGas::init() {
         x = rng.next() % (distribution.cols - 1);
         y = rng.next() % (distribution.rows - 1);
 
-        Scalar tmp_vector( distribution.at<float>(y,x) );
+        Scalar tmp_vector( distribution.at<Vec4f>(y,x) );
 
         node.id = i;
         node.rank = 0;
@@ -110,9 +110,9 @@ bool NeuralGas::train( Scalar _input ) {
     } else {
         // peak random
         int x = rng.next() % (distribution.cols - 1);
-        int y = rng.next()  % (distribution.rows - 1);
+        int y = rng.next() % (distribution.rows - 1);
 
-        input = Scalar::all( distribution.at<float>(y,x) );
+        input = distribution.at<Vec4f>(y,x);
     }
 
     // Calculate the distance of each node`s reference vector from the projected input vector.
@@ -154,7 +154,7 @@ bool NeuralGas::train( Scalar _input ) {
 
         double h = exp( ((double)curr.rank) / sqr_sigma );
 
-        Scalar ref_vector = curr.ref_vector;
+        Scalar & ref_vector = curr.ref_vector;
         Scalar delta;
 
         for(int x=0;x<4;x++){
