@@ -38,7 +38,7 @@
 //
 //M*/
 
-#include "precomp.hpp"
+#include "mlngas.hpp"
 
 using namespace cv;
 using namespace std;
