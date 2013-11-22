@@ -33,7 +33,7 @@ using namespace std;
                 k++;
             }
         }
-        dist.reshape(1,100); // #%@! 2d matrix
+        dist = dist.reshape(4,50); // #%@! 2d matrix
 
         // larger values of lambda0 lead to some kind of sproing / congealing effect
         NeuralGas gas(dist,24,200,5,0.1,0.8,0.01);
