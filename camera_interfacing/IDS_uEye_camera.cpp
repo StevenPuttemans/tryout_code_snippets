@@ -84,13 +84,24 @@ void initializeCameraInterface(HIDS* hCam_internal){
 }
 
 // Capture a frame and push it in a OpenCV mat element
-Mat getFrame(HIDS* hCam, cv::Mat& mat) {
-	VOID* pMem;
-	int retInt = is_GetImageMem(*hCam, &pMem);
+Mat getFrame(HIDS* hCam, int width, int height, cv::Mat& mat) {
+	// Allocate memory for image
+    char* pMem = NULL;
+    int memID = 0;
+    is_AllocImageMem(*hCam, width, height, 8, &pMem, &memID);
+
+    // Activate the image memory for storing the frame captured
+    // Grabbing the image
+    // Getting the data of the frame and push it in a Mat element
+    is_SetImageMem(*hCam, pMem, memID);
+    is_FreezeVideo(*hCam, IS_WAIT);
+
+	VOID* pMem_b;
+	int retInt = is_GetImageMem(*hCam, &pMem_b);
 	if (retInt != IS_SUCCESS) {
 		cout << "Image data could not be read from memory!" << endl;
 	}
-	memcpy(mat.ptr(), pMem, mat.cols * mat.rows);
+	memcpy(mat.ptr(), pMem_b, mat.cols * mat.rows);
 
     	return mat;
 }
@@ -111,18 +122,11 @@ int main()
     // ---------------------------------------------------------------------------------------------------------------
 
     while(true){
-        // Allocate memory for image
-        char* pMem = NULL;
-        int memID = 0;
-        is_AllocImageMem(hCam, 768, 576, 8, &pMem, &memID);
 
-        // Activate the image memory for storing the frame captured
-        // Grabbing the image
-        // Getting the data of the frame and push it in a Mat element
-        is_SetImageMem(hCam, pMem, memID);
-        is_FreezeVideo(hCam, IS_WAIT);
+
+
         Mat current_image (576, 768, CV_8UC1);
-        getFrame(&hCam, current_image);
+        getFrame(&hCam, 768, 576, current_image);
 
         // PERFORM YOUR OPENCV PROCESSING HERE!
         // Visualise the data
