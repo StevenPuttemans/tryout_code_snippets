@@ -122,9 +122,7 @@ int main()
     // ---------------------------------------------------------------------------------------------------------------
 
     while(true){
-
-
-
+	// Create an image and grab a frame
         Mat current_image (576, 768, CV_8UC1);
         getFrame(&hCam, 768, 576, current_image);
 
