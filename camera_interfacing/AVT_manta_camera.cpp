@@ -15,8 +15,7 @@
 * 2) OpenCV 2.4.8 - but compatible with anything above OpenCV 2.x
 * 3) Removed the old and depricated C-API and replaced by C++ - API
 **********************************************************************************
-* IMPORTANT REMARK: Software seems to be working up to Ubuntu 13.02
-* A fix for Ubuntu 14.04 is still in progress and will appear here when ready!
+* IMPORTANT : software fixed until Ubuntu 14.04
 **********************************************************************************/
 
 // --------------------------------------------------------------------------------
@@ -33,8 +32,8 @@
 //
 // MAKE SURE THE CORRECT INCLUDES ARE MADE IN THE FOLLOWING ORDER
 // - /opt/AVT_sdk/lib-pc/x64/4.5/libPvAPI.a
-// - /usr/lib/x86_64-linux-gnu/librt.a
-// - /usr/lib/x86_64-linux-gnu/libpthread.a
+// - /usr/lib/x86_64-linux-gnu/librt.so
+// - /usr/lib/x86_64-linux-gnu/libpthread.so
 //
 // ADD THE PVAPI HEADER TO YOUR PROJECT
 //
