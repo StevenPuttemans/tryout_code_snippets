@@ -14,6 +14,9 @@
 * 1) An AVT MANTA 201 MonoChrome camera
 * 2) OpenCV 2.4.8 - but compatible with anything above OpenCV 2.x
 * 3) Removed the old and depricated C-API and replaced by C++ - API
+**********************************************************************************
+* IMPORTANT REMARK: Software seems to be working up to Ubuntu 13.02
+* A fix for Ubuntu 14.04 is still in progress and will appear here when ready!
 **********************************************************************************/
 
 // --------------------------------------------------------------------------------
