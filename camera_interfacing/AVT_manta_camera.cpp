@@ -71,11 +71,71 @@ typedef struct
 
 #define CH_MONO 1	// Single channel for mono images
 
+void initialize_camera(tCamera* current_cam, int max_capture_width, int max_capture_height, int desired_width, int desired_height){
+    // Initialize the PvAPI interface so that we can look for cameras
+    if(!PvInitialize()){
+        // Wait for the response from a camera after the initialization of the driver
+        // This is done by checking if camera's are found yet
+        while(PvCameraCount() == 0)
+        {
+            waitKey(15);
+        }
+
+        // If there is a camera connecte to the camera 1 interface, grab it!
+        tPvCameraInfo cameraInfo;
+        if ( PvCameraList(&cameraInfo, 1, NULL) == 1)
+		{
+            unsigned long frameSize;
+
+            // Get the camera ID
+			current_cam->UID = cameraInfo.UniqueId;
+			// Open the camera
+			if( !PvCameraOpen(current_cam->UID, ePvAccessMaster, &(current_cam->Handle)) )
+			{
+                // Debug
+                cout << "Camera opened succesfully" << endl;
+
+                // Get the image size of every capture
+                PvAttrUint32Get(current_cam->Handle, "TotalBytesPerFrame", &frameSize);
+
+                // Allocate a buffer to store the image
+                memset(&current_cam->Frame, 0, sizeof(tPvFrame));
+                current_cam->Frame.ImageBufferSize = frameSize;
+                current_cam->Frame.ImageBuffer = new char[frameSize];
+
+                // Set maximum camera parameters - camera specific
+				// Code will generate an input window from the center with the size you want
+				int center_x = max_capture_width / 2;
+				int center_y = max_capture_height / 2;
+
+				// Set the manta camera parameters to get wanted frame size retrieved
+				PvAttrUint32Set(current_cam->Handle, "RegionX", center_x - (desired_width / 2) );
+				PvAttrUint32Set(current_cam->Handle, "RegionY", center_y - (desired_height / 2));
+				PvAttrUint32Set(current_cam->Handle, "Width", desired_width);
+				PvAttrUint32Set(current_cam->Handle, "Height", desired_height);
+
+				// Start the camera
+				PvCaptureStart(current_cam->Handle);
+
+				// Set the camera to capture continuously
+				PvAttrEnumSet(current_cam->Handle, "AcquisitionMode", "Continuous");
+				PvCommandRun(current_cam->Handle, "AcquisitionStart");
+				PvAttrEnumSet(current_cam->Handle, "FrameStartTriggerMode", "Freerun");
+			}else{
+                cout << "Opening camera error" << endl;
+			}
+		}else{
+            cout << "Camera not found or opened unsuccesfully" << endl;
+		}
+    }else{
+        // State that we did not succeed in initializing the API
+        cout << "Failed to initialise the camera API" << endl;
+    }
+}
+
 int main(int argc, char* argv[])
 {
 	tCamera		myCamera;
-	tPvCameraInfo	cameraInfo;
-	unsigned long	frameSize;
 	tPvErr		Errcode;
 
 	if( argc == 1 ){
@@ -89,121 +149,58 @@ int main(int argc, char* argv[])
 	namedWindow("View window",1);
 	moveWindow("View window", 50, 50);
 
-	// Initialize the API
-	if(!PvInitialize())
-	{
-		// Wait for the response from a camera after the initialization of the driver
-		// This is done by checking if camera's are found yet
-		////////////////////////////////////////////////////////////
-		while(PvCameraCount() == 0)
-		{
-			waitKey(15);
-		}
+	// Initialize the camera API and perform some checks
+	int max_capture_width = 1624;
+	int max_capture_height = 1234;
+	int desired_width = atoi(argv[1]);
+	int desired_height = atoi(argv[2]);
+	initialize_camera(&myCamera, max_capture_width, max_capture_height, desired_width, desired_height);
 
-		// Debugging output to see if camera was found or not
-		cout << "Camera found, start initialisation." << endl;
+    // Create infinite loop - break out when condition is met
+    // This is done for trigering the camera capture
+    for(;;)
+    {
+        if(!PvCaptureQueueFrame(myCamera.Handle, &(myCamera.Frame), NULL))
+        {
+            while(PvCaptureWaitForFrameDone(myCamera.Handle, &(myCamera.Frame), 100) == ePvErrTimeout)
+            {
+            }
 
-		/////////////////////////////////////////////////////////////
-		if ( PvCameraList(&cameraInfo, 1, NULL) == 1)
-		{
-			// Get the camera ID
-			myCamera.UID = cameraInfo.UniqueId;
+            ////////////////////////////////////////////////////////
+            // Here comes the OpenCV functionality for each frame //
+            ////////////////////////////////////////////////////////
 
-			// Open the camera
-			if( !PvCameraOpen(myCamera.UID, ePvAccessMaster, &(myCamera.Handle)) )
-			{
-				//debug
-				cout << "Camera opened succesfully." << endl;
+            // Create an image header (mono image)
+            // Push ImageBuffer data into the image matrix
+            Mat image = Mat(desired_height, desired_width, CV_8UC1);
+            image.data = (uchar *)myCamera.Frame.ImageBuffer;
 
-				// Get the image size of every capture
-				PvAttrUint32Get(myCamera.Handle, "TotalBytesPerFrame", &frameSize);
+            // This code should be enabled on a the AVT Proscilla series for color images
+            // This works because of the way the frame memory is stored and grabbed and
+            // Due to the fact that OpenCV only uses smart pointers to the start of the data
+            // REMARK: avoid problems with the correct input grabbing
+            //Mat image = Mat(frame_heigth, frame_width, CV_16UC1);
+            //image.data = (uchar *)myCamera.Frame.ImageBuffer;
+            //Mat color;
+            //cvtColor(image,color,CV_BayerBG2BGR);
 
-				// Allocate a buffer to store the image
-				memset(&myCamera.Frame, 0, sizeof(tPvFrame));
-				myCamera.Frame.ImageBufferSize = frameSize;
-				myCamera.Frame.ImageBuffer = new char[frameSize];
+            // Show the actual frame
+            // Wait 10 ms to have an actual window visualisation
+            imshow("View window", image);
+            waitKey(10);
 
-				// Set maximum camera parameters - camera specific
-				// Code will generate an input window from the center with the size you want
-				// Therefore you need to fill in the maximal camera resolution
-				int max_width = 1624;
-				int max_heigth = 1234;
+            // Release the image data
+            image.release();
+        }
+    }
 
-				int center_x = max_width / 2;
-				int center_y = max_heigth / 2;
+    // Stop the acquisition & free the camera
+    Errcode = PvCommandRun(myCamera.Handle, "AcquisitionStop");
+    if (Errcode != ePvErrSuccess)
+        throw Errcode;
 
-				int frame_width = atoi(argv[1]);
-				int frame_heigth = atoi(argv[2]);
-
-				// Set the manta camera parameters to get wanted frame size retrieved
-				PvAttrUint32Set(myCamera.Handle, "RegionX", center_x - (frame_width / 2) );
-				PvAttrUint32Set(myCamera.Handle, "RegionY", center_y - (frame_heigth / 2));
-				PvAttrUint32Set(myCamera.Handle, "Width", frame_width);
-				PvAttrUint32Set(myCamera.Handle, "Height", frame_heigth);
-
-				// Start the camera
-				PvCaptureStart(myCamera.Handle);
-
-				// Set the camera to capture continuously
-				PvAttrEnumSet(myCamera.Handle, "AcquisitionMode", "Continuous");
-				PvCommandRun(myCamera.Handle, "AcquisitionStart");
-				PvAttrEnumSet(myCamera.Handle, "FrameStartTriggerMode", "Freerun");
-
-				// Create infinite loop - break out when condition is met
-				for(;;)
-				{
-					if(!PvCaptureQueueFrame(myCamera.Handle, &(myCamera.Frame), NULL))
-					{
-						while(PvCaptureWaitForFrameDone(myCamera.Handle, &(myCamera.Frame), 100) == ePvErrTimeout)
-						{
-						}
-
-						////////////////////////////////////////////////////////
-						// Here comes the OpenCV functionality for each frame //
-						////////////////////////////////////////////////////////
-
-						// Create an image header (mono image)
-						// Push ImageBuffer data into the image matrix
-						Mat image = Mat(frame_heigth, frame_width, CV_8UC1);
-						image.data = (uchar *)myCamera.Frame.ImageBuffer;
-
-                                                // This code should be enabled on a the AVT Proscilla series for color images
-						// This works because of the way the frame memory is stored and grabbed and
-						// Due to the fact that OpenCV only uses smart pointers to the start of the data
-						// REMARK: avoid problems with the correct input grabbing
-						//Mat image = Mat(frame_heigth, frame_width, CV_16UC1);
-						//image.data = (uchar *)myCamera.Frame.ImageBuffer;
-			 			//Mat color;
-                                                //cvtColor(image,color,CV_BayerBG2BGR);
- 
-						// Show the actual frame
-						// Wait 10 ms to have an actual window visualisation
-						imshow("View window", color);
-						waitKey(10);
-
-						// Release the image data
-						image.release();
-					}
-				}
-
-				// Stop the acquisition & free the camera
-				Errcode = PvCommandRun(myCamera.Handle, "AcquisitionStop");
-				if (Errcode != ePvErrSuccess)
-					throw Errcode;
-
-				PvCaptureEnd(myCamera.Handle);
-				PvCameraClose(myCamera.Handle);
-
-				cout << endl << "finished" << endl;
-			}
-			else
-			cout << "open camera error" << endl;
-		}
-		else
-		cout << "camera not found" << endl;
-	}
-	else
-	cout << "failed to initialise the API" << endl;
+    PvCaptureEnd(myCamera.Handle);
+    PvCameraClose(myCamera.Handle);
 
     return 0;
 }
