@@ -168,6 +168,11 @@ int main(int argc, char* argv[])
 						image.data = (uchar *)myCamera.Frame.ImageBuffer;
 
                                                 // This code should be enabled on a the AVT Proscilla series for color images
+						// This works because of the way the frame memory is stored and grabbed and
+						// Due to the fact that OpenCV only uses smart pointers to the start of the data
+						// REMARK: avoid problems with the correct input grabbing
+						//Mat image = Mat(frame_heigth, frame_width, CV_16UC1);
+						//image.data = (uchar *)myCamera.Frame.ImageBuffer;
 			 			//Mat color;
                                                 //cvtColor(image,color,CV_BayerBG2BGR);
  
