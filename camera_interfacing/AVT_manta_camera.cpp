@@ -14,8 +14,6 @@
 * 1) An AVT MANTA 201 MonoChrome camera
 * 2) OpenCV 2.4.8 - but compatible with anything above OpenCV 2.x
 * 3) Removed the old and depricated C-API and replaced by C++ - API
-**********************************************************************************
-* IMPORTANT : software fixed until Ubuntu 14.04
 **********************************************************************************/
 
 // --------------------------------------------------------------------------------
@@ -26,9 +24,9 @@
 // - Change the IP address of your pc to 169.254.1.1
 // - Change the subnet mask of your pc to 255.255.0.0
 // - Change the gateway of your pc to 169.254.1.2
-// 
+//
 // CHANGE SOME NETWORK CARD SETTINGS
-// - sudo ifconfig [eth0] mtu 9000 - or 9016 ideally if your card supports that
+// - sudo ifconfig [eth0 - eth1] mtu 9000 - or 9016 ideally if your card supports that
 //
 // MAKE SURE THE CORRECT INCLUDES ARE MADE IN THE FOLLOWING ORDER
 // - /opt/AVT_sdk/lib-pc/x64/4.5/libPvAPI.a
@@ -40,6 +38,10 @@
 // LINK THE OPENCV DEPENDENT LIBRARIES USING THE ADDITIONAL LINKER OPTION
 //	`pkg-config opencv --libs`
 // --------------------------------------------------------------------------------
+
+// Tell the system that you are on a 64 bit linux based system --> needed for PvAPI
+#define _x64 1
+#define _LINUX 1
 
 // Link to the AVT technologies camera library for AVT Manta
 // Make sure you download the PvApi from: http://www.alliedvisiontec.com/us/products/legacy.html
@@ -76,8 +78,6 @@ int main(int argc, char* argv[])
 	unsigned long	frameSize;
 	tPvErr		Errcode;
 
-	int counter = 0;
-
 	if( argc == 1 ){
 		cout << "This script will stream data from an AVT MANTA GigE camera using OpenCV C++ style interface." << endl;
         	cout << "AVT_manta_camera.exe <resolution width> <resolution heigth>" << endl;
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 
 	// Be sure to move the windows to correct location
 	// This is done to ensure that the window takes as much of the screen as possible, but can be commented out
-	namedWindow("View window",1); 
+	namedWindow("View window",1);
 	moveWindow("View window", 50, 50);
 
 	// Initialize the API
@@ -154,8 +154,6 @@ int main(int argc, char* argv[])
 				{
 					if(!PvCaptureQueueFrame(myCamera.Handle, &(myCamera.Frame), NULL))
 					{
-						double time = (double)getTickCount();
-
 						while(PvCaptureWaitForFrameDone(myCamera.Handle, &(myCamera.Frame), 100) == ePvErrTimeout)
 						{
 						}
@@ -173,7 +171,7 @@ int main(int argc, char* argv[])
 						// Wait 10 ms to have an actual window visualisation
 						imshow("View window", image);
 						waitKey(10);
-						
+
 						// Release the image data
 						image.release();
 					}
@@ -200,3 +198,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
