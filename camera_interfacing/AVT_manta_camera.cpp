@@ -167,10 +167,10 @@ int main(int argc, char* argv[])
 						Mat image = Mat(frame_heigth, frame_width, CV_8UC1);
 						image.data = (uchar *)myCamera.Frame.ImageBuffer;
 
-                        // This code should be enabled on a the AVT Proscilla series for color images
-						//Mat color;
-                        //cvtColor(image,color,CV_BayerBG2BGR);
-
+                                                // This code should be enabled on a the AVT Proscilla series for color images
+			 			//Mat color;
+                                                //cvtColor(image,color,CV_BayerBG2BGR);
+ 
 						// Show the actual frame
 						// Wait 10 ms to have an actual window visualisation
 						imshow("View window", color);
