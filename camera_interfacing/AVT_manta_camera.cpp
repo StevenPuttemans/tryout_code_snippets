@@ -89,43 +89,43 @@ void initialize_camera(tCamera* current_cam, int max_capture_width, int max_capt
 
             // Get the camera ID
 	    current_cam->UID = cameraInfo.UniqueId;
-            // Open the camera
+	    // Open the camera
 	    if( !PvCameraOpen(current_cam->UID, ePvAccessMaster, &(current_cam->Handle)) )
 	    {
-            // Debug
-            cout << "Camera opened succesfully" << endl;
+                // Debug
+                cout << "Camera opened succesfully" << endl;
 
-            // Get the image size of every capture
-            PvAttrUint32Get(current_cam->Handle, "TotalBytesPerFrame", &frameSize);
+                // Get the image size of every capture
+                PvAttrUint32Get(current_cam->Handle, "TotalBytesPerFrame", &frameSize);
 
-            // Allocate a buffer to store the image
-            memset(&current_cam->Frame, 0, sizeof(tPvFrame));
-            current_cam->Frame.ImageBufferSize = frameSize;
-            current_cam->Frame.ImageBuffer = new char[frameSize];
+                // Allocate a buffer to store the image
+                memset(&current_cam->Frame, 0, sizeof(tPvFrame));
+                current_cam->Frame.ImageBufferSize = frameSize;
+                current_cam->Frame.ImageBuffer = new char[frameSize];
 
-            // Set maximum camera parameters - camera specific
-	    // Code will generate an input window from the center with the size you want
-	    int center_x = max_capture_width / 2;
-      	    int center_y = max_capture_height / 2;
+                // Set maximum camera parameters - camera specific
+		// Code will generate an input window from the center with the size you want
+		int center_x = max_capture_width / 2;
+		int center_y = max_capture_height / 2;
 
-	    // Set the manta camera parameters to get wanted frame size retrieved
-   	    PvAttrUint32Set(current_cam->Handle, "RegionX", center_x - (desired_width / 2) );
-	    PvAttrUint32Set(current_cam->Handle, "RegionY", center_y - (desired_height / 2));
-	    PvAttrUint32Set(current_cam->Handle, "Width", desired_width);
-	    PvAttrUint32Set(current_cam->Handle, "Height", desired_height);
+		// Set the manta camera parameters to get wanted frame size retrieved
+		PvAttrUint32Set(current_cam->Handle, "RegionX", center_x - (desired_width / 2) );
+		PvAttrUint32Set(current_cam->Handle, "RegionY", center_y - (desired_height / 2));
+		PvAttrUint32Set(current_cam->Handle, "Width", desired_width);
+		PvAttrUint32Set(current_cam->Handle, "Height", desired_height);
 
-	    // Start the camera
-	    PvCaptureStart(current_cam->Handle);
+		// Start the camera
+		PvCaptureStart(current_cam->Handle);
 
-    	    // Set the camera to capture continuously
-	    PvAttrEnumSet(current_cam->Handle, "AcquisitionMode", "Continuous");
-   	    PvCommandRun(current_cam->Handle, "AcquisitionStart");
-	    PvAttrEnumSet(current_cam->Handle, "FrameStartTriggerMode", "Freerun");
+		// Set the camera to capture continuously
+		PvAttrEnumSet(current_cam->Handle, "AcquisitionMode", "Continuous");
+		PvCommandRun(current_cam->Handle, "AcquisitionStart");
+		PvAttrEnumSet(current_cam->Handle, "FrameStartTriggerMode", "Freerun");
+	    }else{
+                cout << "Opening camera error" << endl;
+	    }
 	}else{
-            cout << "Opening camera error" << endl;
-	}
-	}else{
-    	    cout << "Camera not found or opened unsuccesfully" << endl;
+            cout << "Camera not found or opened unsuccesfully" << endl;
 	}
     }else{
         // State that we did not succeed in initializing the API
@@ -135,26 +135,26 @@ void initialize_camera(tCamera* current_cam, int max_capture_width, int max_capt
 
 int main(int argc, char* argv[])
 {
-	tCamera		myCamera;
-	tPvErr		Errcode;
+    tCamera		myCamera;
+    tPvErr		Errcode;
 
-	if( argc == 1 ){
-		cout << "This script will stream data from an AVT MANTA GigE camera using OpenCV C++ style interface." << endl;
-        	cout << "AVT_manta_camera.exe <resolution width> <resolution heigth>" << endl;
-		return 0;
-	}
+    if( argc == 1 ){
+	cout << "This script will stream data from an AVT MANTA GigE camera using OpenCV C++ style interface." << endl;
+        cout << "AVT_manta_camera.exe <resolution width> <resolution heigth>" << endl;
+	return 0;
+    }
 
-	// Be sure to move the windows to correct location
-	// This is done to ensure that the window takes as much of the screen as possible, but can be commented out
-	namedWindow("View window",1);
-	moveWindow("View window", 50, 50);
+    // Be sure to move the windows to correct location
+    // This is done to ensure that the window takes as much of the screen as possible, but can be commented out
+    namedWindow("View window",1);
+    moveWindow("View window", 50, 50);
 
-	// Initialize the camera API and perform some checks
-	int max_capture_width = 1624;
-	int max_capture_height = 1234;
-	int desired_width = atoi(argv[1]);
-	int desired_height = atoi(argv[2]);
-	initialize_camera(&myCamera, max_capture_width, max_capture_height, desired_width, desired_height);
+    // Initialize the camera API and perform some checks
+    int max_capture_width = 1624;
+    int max_capture_height = 1234;
+    int desired_width = atoi(argv[1]);
+    int desired_height = atoi(argv[2]);
+    initialize_camera(&myCamera, max_capture_width, max_capture_height, desired_width, desired_height);
 
     // Create infinite loop - break out when condition is met
     // This is done for trigering the camera capture
