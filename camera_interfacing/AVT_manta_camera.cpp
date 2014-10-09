@@ -84,49 +84,49 @@ void initialize_camera(tCamera* current_cam, int max_capture_width, int max_capt
         // If there is a camera connecte to the camera 1 interface, grab it!
         tPvCameraInfo cameraInfo;
         if ( PvCameraList(&cameraInfo, 1, NULL) == 1)
-		{
+	{
             unsigned long frameSize;
 
             // Get the camera ID
-			current_cam->UID = cameraInfo.UniqueId;
-			// Open the camera
-			if( !PvCameraOpen(current_cam->UID, ePvAccessMaster, &(current_cam->Handle)) )
-			{
-                // Debug
-                cout << "Camera opened succesfully" << endl;
+	    current_cam->UID = cameraInfo.UniqueId;
+            // Open the camera
+	    if( !PvCameraOpen(current_cam->UID, ePvAccessMaster, &(current_cam->Handle)) )
+	    {
+            // Debug
+            cout << "Camera opened succesfully" << endl;
 
-                // Get the image size of every capture
-                PvAttrUint32Get(current_cam->Handle, "TotalBytesPerFrame", &frameSize);
+            // Get the image size of every capture
+            PvAttrUint32Get(current_cam->Handle, "TotalBytesPerFrame", &frameSize);
 
-                // Allocate a buffer to store the image
-                memset(&current_cam->Frame, 0, sizeof(tPvFrame));
-                current_cam->Frame.ImageBufferSize = frameSize;
-                current_cam->Frame.ImageBuffer = new char[frameSize];
+            // Allocate a buffer to store the image
+            memset(&current_cam->Frame, 0, sizeof(tPvFrame));
+            current_cam->Frame.ImageBufferSize = frameSize;
+            current_cam->Frame.ImageBuffer = new char[frameSize];
 
-                // Set maximum camera parameters - camera specific
-				// Code will generate an input window from the center with the size you want
-				int center_x = max_capture_width / 2;
-				int center_y = max_capture_height / 2;
+            // Set maximum camera parameters - camera specific
+	    // Code will generate an input window from the center with the size you want
+	    int center_x = max_capture_width / 2;
+      	    int center_y = max_capture_height / 2;
 
-				// Set the manta camera parameters to get wanted frame size retrieved
-				PvAttrUint32Set(current_cam->Handle, "RegionX", center_x - (desired_width / 2) );
-				PvAttrUint32Set(current_cam->Handle, "RegionY", center_y - (desired_height / 2));
-				PvAttrUint32Set(current_cam->Handle, "Width", desired_width);
-				PvAttrUint32Set(current_cam->Handle, "Height", desired_height);
+	    // Set the manta camera parameters to get wanted frame size retrieved
+   	    PvAttrUint32Set(current_cam->Handle, "RegionX", center_x - (desired_width / 2) );
+	    PvAttrUint32Set(current_cam->Handle, "RegionY", center_y - (desired_height / 2));
+	    PvAttrUint32Set(current_cam->Handle, "Width", desired_width);
+	    PvAttrUint32Set(current_cam->Handle, "Height", desired_height);
 
-				// Start the camera
-				PvCaptureStart(current_cam->Handle);
+	    // Start the camera
+	    PvCaptureStart(current_cam->Handle);
 
-				// Set the camera to capture continuously
-				PvAttrEnumSet(current_cam->Handle, "AcquisitionMode", "Continuous");
-				PvCommandRun(current_cam->Handle, "AcquisitionStart");
-				PvAttrEnumSet(current_cam->Handle, "FrameStartTriggerMode", "Freerun");
-			}else{
-                cout << "Opening camera error" << endl;
-			}
-		}else{
-            cout << "Camera not found or opened unsuccesfully" << endl;
-		}
+    	    // Set the camera to capture continuously
+	    PvAttrEnumSet(current_cam->Handle, "AcquisitionMode", "Continuous");
+   	    PvCommandRun(current_cam->Handle, "AcquisitionStart");
+	    PvAttrEnumSet(current_cam->Handle, "FrameStartTriggerMode", "Freerun");
+	}else{
+            cout << "Opening camera error" << endl;
+	}
+	}else{
+    	    cout << "Camera not found or opened unsuccesfully" << endl;
+	}
     }else{
         // State that we did not succeed in initializing the API
         cout << "Failed to initialise the camera API" << endl;
