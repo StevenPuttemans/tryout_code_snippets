@@ -19,12 +19,41 @@ int main()
     string myStrings[] = {"SIFT", "SURF", "FAST", "STAR", "ORB", "BRISK", "MSER", "HARRIS", "Dense", "SimpleBlob"};
     vector<string> feature_types (myStrings, myStrings + sizeof(myStrings) / sizeof(string));
 
+    // Define a mask region here if you want this!
+    Mat mask_image = Mat();
 
     for(int i = 0; i < (int)feature_types.size(); i ++){
         cerr << "Feature type " << feature_types[i] << " is being calculated." << endl;
+
+        //-----------------------------------------------------------------------------
+        // STANDARD FEATURE DETECTOR INTERFACE
+        //-----------------------------------------------------------------------------
         Ptr<FeatureDetector> detector = FeatureDetector::create(feature_types[i]);
+        //-----------------------------------------------------------------------------
+        // GRID ADAPTED FEATURE DETECTOR - uncomment code below
+        // Let a feature detector run over partitions of the source image
+        //-----------------------------------------------------------------------------
+        int max_keypoints = 100;
+        int grid_rows = 10;
+        int grid_cols = 10;
+        GridAdaptedFeatureDetector grid_detector( detector, max_keypoints, grid_rows, grid_cols);
+        //-----------------------------------------------------------------------------
+        // PYRAMID ADAPTED FEATURE DETECTOR - uncomment code below
+        // Detect keypoints over multiple levels of Gaussian Pyramid
+        // Use if a class of detectors is not inherently scaled
+        //-----------------------------------------------------------------------------
+        int levels_of_gaussian_pyramid = 5;
+        PyramidAdaptedFeatureDetector pyramid_detector( detector, levels_of_gaussian_pyramid);
+        //-----------------------------------------------------------------------------
+
         vector<KeyPoint> these_keypoints;
-        detector->detect(image_gray, these_keypoints, Mat());
+        //-----------------------------------------------------------------------------
+        // Choose the correct option here <---
+        detector->detect(image_gray, these_keypoints, mask_image);
+        //grid_detector.detect(image_gray, these_keypoints, mask_image);
+        //pyramid_detector.detect(image_gray, these_keypoints, mask_image);
+        //-----------------------------------------------------------------------------
+
         all_keypoint_vectors.push_back(these_keypoints);
     }
 
