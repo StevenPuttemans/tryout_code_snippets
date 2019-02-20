@@ -1,10 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////
-OPENCV TRYOUT CODE REPOSITORY
-@ StevenPuttemans
+TRYOUT CODE REPOSITORY
+@StevenPuttemans
 ////////////////////////////////////////////////////////////////////////////
 
-A small repository to contain some sample openCV projects that need more research
-before it is even sensible to add them as pull requests to the larger OpenCV database.
+A small repository to contain some sample code projects that need more research.
 
 Feel free to fork the repository and submit changes for running code.
 
@@ -28,3 +27,15 @@ Currently OpenCV2.4.9 is interfaced with
 
 - AVT Manta gigE camera
 - IDS uEye UI-622 gigE camera
+
+////////////////////////////////////////////////////////////////////////////
+Facial features module	
+////////////////////////////////////////////////////////////////////////////
+
+Contains code that uses dlib and DNN modules of OpenCV to detect facial features
+
+////////////////////////////////////////////////////////////////////////////
+Feature matching module
+////////////////////////////////////////////////////////////////////////////
+
+Takes existing OpenCV feature detectors and matchers and builds an interface around them
