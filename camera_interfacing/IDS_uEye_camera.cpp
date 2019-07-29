@@ -102,7 +102,8 @@ Mat getFrame(HIDS* hCam, int width, int height, cv::Mat& mat) {
 		cout << "Image data could not be read from memory!" << endl;
 	}
 	memcpy(mat.ptr(), pMem_b, mat.cols * mat.rows);
-
+	is_FreeImageMem(*hCam, pMem, memID)
+	
     	return mat;
 }
 
